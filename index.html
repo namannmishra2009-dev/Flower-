@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flower Field</title>
+    <title>Growing Flower Field</title>
     <style>
         body, html {
             margin: 0;
@@ -11,96 +11,154 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background-color: #1a1a2e; /* Dim, dark blue background */
+            background: radial-gradient(circle at center, #1a1a2e 0%, #05050a 100%);
         }
 
-        /* The Green Field */
+        /* The Green Field - Flowers only grow here now */
         .field {
             position: absolute;
             bottom: 0;
             width: 100%;
-            height: 30%;
-            background: linear-gradient(to bottom, #2d5a27, #1e3f1a);
-            z-index: 1;
+            height: 35%;
+            background: linear-gradient(to bottom, #1e3f1a, #0a140a);
+            z-index: 5;
+            cursor: pointer;
+            border-top: 2px solid #2d5a27;
         }
 
-        .flower {
+        /* The Stem */
+        .stem {
             position: absolute;
-            transform: translate(-50%, -50%) scale(0);
-            animation: bloom 1s ease-out forwards;
-            z-index: 2;
+            width: 4px;
+            background: #2d5a27;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            height: 0;
+            animation: grow-stem 0.6s ease-out forwards;
         }
 
-        /* Blooming Animation */
+        @keyframes grow-stem {
+            to { height: 60px; }
+        }
+
+        /* The Flower Head */
+        .flower-head {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            animation: bloom 0.5s 0.6s ease-out forwards;
+        }
+
         @keyframes bloom {
-            0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); }
-            60% { transform: translate(-50%, -50%) scale(1.2) rotate(45deg); }
-            100% { transform: translate(-50%, -50%) scale(1) rotate(15deg); }
+            0% { transform: translate(-50%, -50%) scale(0); }
+            100% { transform: translate(-50%, -50%) scale(1); }
         }
 
         .petal {
             position: absolute;
-            background: #ff69b4;
-            width: 20px;
-            height: 35px;
+            width: 15px;
+            height: 25px;
             border-radius: 50%;
-            box-shadow: 0 0 10px rgba(255, 105, 180, 0.5);
+            transform-origin: bottom center;
         }
 
         .center {
             position: absolute;
             background: #ffd700;
-            width: 15px;
-            height: 15px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            top: 50%;
-            left: 50%;
+            top: 0; left: 0;
             transform: translate(-50%, -50%);
-            z-index: 3;
+        }
+
+        /* Fireflies */
+        .firefly {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #ffffaa;
+            border-radius: 50%;
+            box-shadow: 0 0 8px #ffffaa;
+            animation: drift linear infinite, flicker 3s ease-in-out infinite;
+        }
+
+        @keyframes drift {
+            from { transform: translateY(0) translateX(0); }
+            to { transform: translateY(-100vh) translateX(30px); }
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 0.7; }
         }
     </style>
 </head>
 <body>
 
-    <div class="field"></div>
+    <div class="field" id="grassField"></div>
 
     <script>
-        document.addEventListener('click', (e) => {
-            createFlower(e.clientX, e.clientY);
+        const field = document.getElementById('grassField');
+
+        field.addEventListener('click', (e) => {
+            // Get click position relative to the field
+            const rect = field.getBoundingClientRect();
+            const x = e.clientX;
+            const y = e.clientY;
+
+            createFlower(x, y);
         });
 
         function createFlower(x, y) {
-            const flower = document.createElement('div');
-            flower.className = 'flower';
-            flower.style.left = x + 'px';
-            flower.style.top = y + 'px';
+            const container = document.createElement('div');
+            container.style.position = 'absolute';
+            container.style.left = x + 'px';
+            container.style.top = y + 'px';
+            container.style.zIndex = '10';
 
-            // Randomize color slightly
-            const colors = ['#ff69b4', '#ffb6c1', '#f08080', '#e6e6fa', '#ffffff'];
-            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            // Create the stem
+            const stem = document.createElement('div');
+            stem.className = 'stem';
 
-            // Create 5 petals
+            // Create the flower head (petals + center)
+            const flowerHead = document.createElement('div');
+            flowerHead.className = 'flower-head';
+
+            const colors = ['#ff85a1', '#fbb1bd', '#9b5de5', '#fee440', '#00f5d4'];
+            const petalColor = colors[Math.floor(Math.random() * colors.length)];
+
             for (let i = 0; i < 5; i++) {
                 const petal = document.createElement('div');
                 petal.className = 'petal';
-                petal.style.background = randomColor;
-                petal.style.transform = `translate(-50%, -50%) rotate(${i * 72}deg) translateY(-15px)`;
-                flower.appendChild(petal);
+                petal.style.background = petalColor;
+                petal.style.transform = `translate(-50%, -100%) rotate(${i * 72}deg)`;
+                flowerHead.appendChild(petal);
             }
 
-            // Add center
             const center = document.createElement('div');
             center.className = 'center';
-            flower.appendChild(center);
+            flowerHead.appendChild(center);
 
-            document.body.appendChild(flower);
+            stem.appendChild(flowerHead);
+            container.appendChild(stem);
+            document.body.appendChild(container);
+        }
 
-            // Cleanup after a while to keep it light
-            setTimeout(() => {
-                if (document.body.contains(flower)) {
-                    flower.style.opacity = '0';
-                    flower.style.transition = 'opacity 2s';
-                    setTimeout(() => flower.remove(), 2000);
+        // Initialize Fireflies
+        for (let i = 0; i < 25; i++) {
+            const f = document.createElement('div');
+            f.className = 'firefly';
+            f.style.left = Math.random() * 100 + 'vw';
+            f.style.top = Math.random() * 100 + 'vh';
+            f.style.animationDuration = (Math.random() * 15 + 10) + 's, ' + (Math.random() * 4 + 2) + 's';
+            document.body.appendChild(f);
+        }
+    </script>
+</body>
+</html>
                 }
             }, 10000);
         }
