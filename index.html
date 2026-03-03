@@ -3,77 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Jhansi's Bioluminescent Garden</title>
+    <title>Jhansi's Magical Garden</title>
     <style>
         body, html {
             margin: 0; padding: 0;
             width: 100%; height: 100%;
-            background: #000; /* Deep black like the video */
+            background: #000;
             overflow: hidden;
             touch-action: none;
         }
 
-        /* The Moon */
         .moon {
             position: absolute;
-            top: 50px; right: 50px;
-            width: 80px; height: 80px;
+            top: 40px; right: 40px;
+            width: 90px; height: 90px;
             background: #fffde0;
             border-radius: 50%;
             display: flex;
             align-items: center; justify-content: center;
-            box-shadow: 0 0 40px rgba(255, 253, 224, 0.2);
+            box-shadow: 0 0 40px rgba(255, 253, 224, 0.3);
             z-index: 1;
         }
         .moon-text { font-family: 'Georgia', serif; color: #555; font-size: 14px; font-weight: bold; }
 
-        /* Clickable Field */
         .field {
             position: absolute;
-            bottom: 0; width: 100%; height: 40%;
+            bottom: 0; width: 100%; height: 100%; /* Entire screen is clickable now */
             z-index: 100;
             cursor: crosshair;
         }
 
-        /* SVG Flower Styling */
         .flower-svg {
             position: absolute;
             pointer-events: none;
-            filter: drop-shadow(0 0 10px rgba(125, 211, 252, 0.8));
+            filter: drop-shadow(0 0 12px rgba(125, 211, 252, 0.9));
             transform-origin: bottom center;
-            animation: gentle-sway 4s ease-in-out infinite;
+            animation: sway 5s ease-in-out infinite;
         }
 
-        @keyframes gentle-sway {
-            0%, 100% { transform: rotate(-1deg); }
-            50% { transform: rotate(1deg); }
+        @keyframes sway {
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
         }
 
-        /* Animated Drawing Path */
-        .draw-path {
-            stroke-dasharray: 1000;
-            stroke-dashoffset: 1000;
-            animation: draw 3s ease-out forwards;
+        /* Stem drawing animation */
+        .stem-path {
+            stroke-dasharray: 200;
+            stroke-dashoffset: 200;
+            animation: draw-stem 1.5s ease-out forwards;
         }
 
-        @keyframes draw { to { stroke-dashoffset: 0; } }
+        @keyframes draw-stem {
+            to { stroke-dashoffset: 0; }
+        }
 
-        /* Bloom Animation */
-        .bloom {
+        /* Flower head blooming AT THE TOP */
+        .bloom-head {
             transform: scale(0);
-            transform-origin: center;
-            animation: scale-up 1.5s 2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            transform-origin: 50px 40px; /* Fixed point at the top of the stem */
+            animation: open-petals 1s 1.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
         }
 
-        @keyframes scale-up { to { transform: scale(1); } }
+        @keyframes open-petals {
+            from { transform: scale(0); }
+            to { transform: scale(1); }
+        }
 
-        /* Star Dust */
-        .dust {
-            position: absolute;
-            background: white;
-            border-radius: 50%;
-            pointer-events: none;
-            opacity: 0.3;
+        /* Side leaves appearing as stem passes them */
+        .leaf {
+            transform: scale(0);
+            transform-origin: 50px var(--y);
+            animation: leaf-grow 0.8s forwards;
+        }
+
+        @keyframes leaf-grow {
+            to { transform: scale(1); }
         }
     </style>
 </head>
@@ -88,60 +92,64 @@
         function createFlower(x, y) {
             const svgNS = "http://www.w3.org/2000/svg";
             const svg = document.createElementNS(svgNS, "svg");
-            const height = 200 + Math.random() * 100;
+            const h = 180 + Math.random() * 50;
             
-            svg.setAttribute("viewBox", `0 0 100 ${height}`);
-            svg.setAttribute("width", "120");
-            svg.setAttribute("height", height);
+            svg.setAttribute("viewBox", `0 0 100 ${h}`);
+            svg.setAttribute("width", "100");
+            svg.setAttribute("height", h);
             svg.setAttribute("class", "flower-svg");
-            svg.style.left = (x - 60) + "px";
-            svg.style.top = (y - height + 20) + "px";
+            svg.style.left = (x - 50) + "px";
+            svg.style.top = (y - h + 10) + "px";
 
-            // Main Stem (Curve)
+            // The Stem
             const stem = document.createElementNS(svgNS, "path");
-            const curve = 40 + Math.random() * 20;
-            stem.setAttribute("d", `M50,${height} Q${curve},${height/2} 50,40`);
+            stem.setAttribute("d", `M50,${h} Q${45 + Math.random()*10},${h/2} 50,40`);
             stem.setAttribute("stroke", "#4facfe");
-            stem.setAttribute("stroke-width", "2");
+            stem.setAttribute("stroke-width", "2.5");
             stem.setAttribute("fill", "none");
-            stem.setAttribute("class", "draw-path");
+            stem.setAttribute("class", "stem-path");
             svg.appendChild(stem);
 
-            // Side Leaves
-            for(let i=0; i<3; i++) {
-                const leafY = height - (40 + i * 40);
+            // Side Leaves (with delayed appearance)
+            for(let i=0; i<2; i++) {
+                const leafY = h - 60 - (i * 40);
                 const side = i % 2 === 0 ? 1 : -1;
                 const leaf = document.createElementNS(svgNS, "path");
-                leaf.setAttribute("d", `M50,${leafY} C${50+20*side},${leafY-10} ${50+20*side},${leafY-30} 50,${leafY-20}`);
+                leaf.setAttribute("d", `M50,${leafY} C${50+20*side},${leafY-5} ${50+15*side},${leafY-25} 50,${leafY-15}`);
                 leaf.setAttribute("fill", "#00f2fe");
-                leaf.setAttribute("class", "bloom");
-                leaf.style.animationDelay = (1 + i*0.3) + "s";
+                leaf.setAttribute("class", "leaf");
+                leaf.style.setProperty('--y', `${leafY}px`);
+                leaf.style.animationDelay = (0.5 + i*0.4) + "s";
                 svg.appendChild(leaf);
             }
 
-            // The Petals (The Glowy Bloom)
-            const bloomG = document.createElementNS(svgNS, "g");
-            bloomG.setAttribute("class", "bloom");
-            
+            // Flower Head (Grouped at the top)
+            const head = document.createElementNS(svgNS, "g");
+            head.setAttribute("class", "bloom-head");
+
+            // Petals
             for(let i=0; i<6; i++) {
                 const p = document.createElementNS(svgNS, "ellipse");
                 p.setAttribute("cx", "50"); p.setAttribute("cy", "25");
-                p.setAttribute("rx", "8"); p.setAttribute("ry", "15");
+                p.setAttribute("rx", "7"); p.setAttribute("ry", "16");
                 p.setAttribute("fill", "#7dd3fc");
                 p.setAttribute("transform", `rotate(${i*60}, 50, 40)`);
                 p.style.opacity = "0.9";
-                bloomG.appendChild(p);
+                head.appendChild(p);
             }
 
-            // Inner Glow Center
+            // Center glow
             const center = document.createElementNS(svgNS, "circle");
             center.setAttribute("cx", "50"); center.setAttribute("cy", "40");
             center.setAttribute("r", "4");
             center.setAttribute("fill", "#fff");
-            bloomG.appendChild(center);
+            head.appendChild(center);
 
-            svg.appendChild(bloomG);
+            svg.appendChild(head);
             document.body.appendChild(svg);
+            
+            // Cleanup: remove after 20 seconds to keep performance high
+            setTimeout(() => svg.remove(), 20000);
         }
 
         function handle(e) {
@@ -153,16 +161,6 @@
 
         garden.addEventListener('mousedown', handle);
         garden.addEventListener('touchstart', handle, {passive: false});
-
-        // Add background stars/dust
-        for(let i=0; i<80; i++) {
-            const d = document.createElement('div');
-            d.className = 'dust';
-            d.style.width = d.style.height = Math.random() * 2 + 'px';
-            d.style.left = Math.random() * 100 + '%';
-            d.style.top = Math.random() * 100 + '%';
-            document.body.appendChild(d);
-        }
     </script>
 </body>
 </html>
