@@ -3,196 +3,202 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Magical Jhansi Field</title>
+    <title>Jhansi's Magical Garden</title>
     <style>
         :root {
-            --night-sky: radial-gradient(circle at 50% 100%, #1a2a44 0%, #050912 100%);
-            --grass-color: linear-gradient(to bottom, #1b3a1a, #0a140a);
-            --moon-glow: rgba(255, 255, 230, 0.4);
+            --bg-color: #050505;
+            --moon-color: #fffde0;
+            --flower-blue: #7dd3fc;
+            --leaf-blue: #1e3a8a;
         }
 
         body, html {
             margin: 0; padding: 0;
             width: 100%; height: 100%;
+            background-color: var(--bg-color);
             overflow: hidden;
-            background: var(--night-sky);
+            touch-action: none;
             font-family: 'Georgia', serif;
-            touch-action: none; /* Prevents zooming/scrolling while planting */
         }
 
-        /* The Luminous Moon */
+        /* Stars Background */
+        .stars {
+            position: absolute;
+            width: 100%; height: 100%;
+            background: transparent;
+            z-index: 0;
+        }
+
+        /* The Moon with "Jhansi" */
         .moon {
             position: absolute;
-            top: 8%; right: 10%;
-            width: 110px; height: 110px;
-            background: radial-gradient(circle at center, white 30%, #fffde0 100%);
+            top: 10%; right: 10%;
+            width: 100px; height: 100px;
+            background: var(--moon-color);
             border-radius: 50%;
             display: flex;
             align-items: center; justify-content: center;
-            box-shadow: 0 0 50px var(--moon-glow), 0 0 100px var(--moon-glow);
-            z-index: 1;
-            pointer-events: none; /* Can't block clicks */
+            box-shadow: 0 0 60px rgba(255, 253, 224, 0.4);
+            z-index: 2;
         }
 
         .moon-text {
-            color: rgba(80, 80, 80, 0.7);
-            font-size: 18px;
+            color: #444;
+            font-size: 16px;
             font-weight: bold;
-            letter-spacing: 2px;
-            font-variant: small-caps;
+            letter-spacing: 1px;
+            opacity: 0.7;
         }
 
-        /* The Grass Field - The Clickable Area */
+        /* Grass Field */
         .field {
             position: absolute;
-            bottom: 0; width: 100%; height: 40%;
-            background: var(--grass-color);
-            z-index: 10; /* High z-index to catch touches */
-            cursor: crosshair;
-            border-top: 1px solid rgba(255,255,255,0.1);
+            bottom: 0; width: 100%; height: 35%;
+            background: linear-gradient(to bottom, #0a1a0a, #000);
+            z-index: 10;
+            cursor: pointer;
         }
 
-        /* Flower Visuals */
-        .flower-container {
+        /* Flower SVG Styling */
+        .flower-svg {
             position: absolute;
-            pointer-events: none; /* Flowers won't block future clicks */
             transform-origin: bottom center;
-            animation: sway 5s ease-in-out infinite;
+            filter: drop-shadow(0 0 8px rgba(125, 211, 252, 0.6));
+            animation: sway 6s ease-in-out infinite;
+            pointer-events: none;
         }
 
         @keyframes sway {
-            0%, 100% { transform: rotate(-1.5deg); }
-            50% { transform: rotate(1.5deg); }
+            0%, 100% { transform: rotate(-2deg); }
+            50% { transform: rotate(2deg); }
         }
 
-        .stem {
-            position: absolute;
-            bottom: 0; left: -1.5px;
-            width: 3px;
-            background: linear-gradient(to top, #132a13, #2d5a27);
-            height: 0;
-            animation: grow-stem 1.5s ease-out forwards;
+        /* Growth Animation for SVG Paths */
+        .grow-path {
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: grow-animate 2.5s ease-out forwards;
         }
 
-        @keyframes grow-stem { to { height: 70px; } }
-
-        .flower-head {
-            position: absolute;
-            top: 0; left: 50%;
-            transform: translate(-50%, -50%) scale(0);
-            animation: bloom-main 2s 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        @keyframes grow-animate {
+            to { stroke-dashoffset: 0; }
         }
 
-        @keyframes bloom-main {
-            to { transform: translate(-50%, -50%) scale(1); }
+        .bloom-petal {
+            transform: scale(0);
+            transform-origin: center;
+            animation: petal-appear 1s 1.8s ease-out forwards;
         }
 
-        .petal {
-            position: absolute;
-            width: 18px; height: 32px;
-            border-radius: 50% 50% 50% 50% / 80% 80% 20% 20%;
-            transform-origin: bottom center;
-            box-shadow: inset 0 -10px 15px rgba(0,0,0,0.1);
+        @keyframes petal-appear {
+            to { transform: scale(1); }
         }
 
-        .center {
-            position: absolute;
-            background: #ffd700;
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            top: 0; left: 0;
-            transform: translate(-50%, -50%);
-            z-index: 5;
-        }
-
-        /* Fireflies - Pass-through pointers */
+        /* Fireflies */
         .firefly {
             position: absolute;
-            width: 3px; height: 3px;
-            background: #e1ff00;
+            width: 2px; height: 2px;
+            background: #fff;
             border-radius: 50%;
-            box-shadow: 0 0 10px #e1ff00;
-            pointer-events: none; /* Critical: clicks go through them */
-            z-index: 2;
-            animation: drift 20s linear infinite, flicker 4s ease-in-out infinite;
+            box-shadow: 0 0 8px #fff;
+            z-index: 5;
+            pointer-events: none;
+            animation: float 15s infinite linear;
         }
 
-        @keyframes drift {
-            from { transform: translate(0, 0); }
-            to { transform: translate(80px, -100vh); }
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0); opacity: 0; }
+            50% { opacity: 0.8; }
+            100% { transform: translateY(-100vh) translateX(50px); opacity: 0; }
         }
-
-        @keyframes flicker { 0%, 100% { opacity: 0; } 50% { opacity: 0.8; } }
     </style>
 </head>
 <body>
 
+    <div class="stars" id="starField"></div>
     <div class="moon"><div class="moon-text">Jhansi</div></div>
     <div class="field" id="grassField"></div>
 
     <script>
         const field = document.getElementById('grassField');
 
-        function handleInteraction(e) {
+        function createFlower(x, y) {
+            const svgNS = "http://www.w3.org/2000/svg";
+            const svg = document.createElementNS(svgNS, "svg");
+            
+            // Randomly scale height for variation
+            const h = 150 + Math.random() * 100;
+            svg.setAttribute("viewBox", `0 0 100 ${h}`);
+            svg.setAttribute("width", "100");
+            svg.setAttribute("height", h);
+            svg.classList.add("flower-svg");
+            
+            svg.style.left = (x - 50) + "px";
+            svg.style.top = (y - h) + "px";
+
+            // Main Stem
+            const stem = document.createElementNS(svgNS, "path");
+            stem.setAttribute("d", `M50,${h} Q${40 + Math.random()*20},${h/2} 50,30`);
+            stem.setAttribute("stroke", "#2d5a27");
+            stem.setAttribute("stroke-width", "3");
+            stem.setAttribute("fill", "none");
+            stem.classList.add("grow-path");
+            svg.appendChild(stem);
+
+            // Petals (The "Glow" look)
+            const petalsGroup = document.createElementNS(svgNS, "g");
+            petalsGroup.classList.add("bloom-petal");
+            
+            const colors = ['#7dd3fc', '#e0f2fe', '#bae6fd'];
+            const petalColor = colors[Math.floor(Math.random() * colors.length)];
+
+            for (let i = 0; i < 5; i++) {
+                const petal = document.createElementNS(svgNS, "ellipse");
+                petal.setAttribute("cx", "50");
+                petal.setAttribute("cy", "20");
+                petal.setAttribute("rx", "12");
+                petal.setAttribute("ry", "20");
+                petal.setAttribute("fill", petalColor);
+                petal.setAttribute("transform", `rotate(${i * 72}, 50, 30)`);
+                petal.style.opacity = "0.8";
+                petalsGroup.appendChild(petal);
+            }
+
+            // Flower Center
+            const center = document.createElementNS(svgNS, "circle");
+            center.setAttribute("cx", "50");
+            center.setAttribute("cy", "30");
+            center.setAttribute("r", "5");
+            center.setAttribute("fill", "#ffd700");
+            petalsGroup.appendChild(center);
+
+            svg.appendChild(petalsGroup);
+            document.body.appendChild(svg);
+        }
+
+        // Interaction Handling
+        function handle(e) {
             e.preventDefault();
-            // Works for both Mouse and Finger
-            const rect = field.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            // Adjust coordinates to be relative to the body for planting
             createFlower(clientX, clientY);
         }
 
-        field.addEventListener('mousedown', handleInteraction);
-        field.addEventListener('touchstart', handleInteraction, {passive: false});
+        field.addEventListener('mousedown', handle);
+        field.addEventListener('touchstart', handle, {passive: false});
 
-        function createFlower(x, y) {
-            const container = document.createElement('div');
-            container.className = 'flower-container';
-            container.style.left = x + 'px';
-            container.style.top = y + 'px';
-            container.style.zIndex = "11";
-
-            const stem = document.createElement('div');
-            stem.className = 'stem';
-
-            const head = document.createElement('div');
-            head.className = 'flower-head';
-
-            const palettes = [
-                {p: '#ff758c', s: '#ff7eb3'}, 
-                {p: '#a18cd1', s: '#fbc2eb'}, 
-                {p: '#f9d423', s: '#ffdb01'}, 
-                {p: '#4facfe', s: '#00f2fe'}
-            ];
-            const color = palettes[Math.floor(Math.random() * palettes.length)];
-
-            for (let i = 0; i < 6; i++) {
-                const petal = document.createElement('div');
-                petal.className = 'petal';
-                petal.style.background = `linear-gradient(to top, ${color.p}, ${color.s})`;
-                petal.style.transform = `translate(-50%, -100%) rotate(${i * 60}deg)`;
-                head.appendChild(petal);
-            }
-
-            const center = document.createElement('div');
-            center.className = 'center';
-            head.appendChild(center);
-
-            stem.appendChild(head);
-            container.appendChild(stem);
-            document.body.appendChild(container);
-        }
-
-        // Generate Fireflies
-        for (let i = 0; i < 30; i++) {
-            const f = document.createElement('div');
-            f.className = 'firefly';
-            f.style.left = Math.random() * 100 + 'vw';
-            f.style.top = Math.random() * 100 + 'vh';
-            f.style.animationDelay = Math.random() * 10 + 's';
-            document.body.appendChild(f);
+        // Add Stars
+        const starContainer = document.getElementById('starField');
+        for(let i=0; i<100; i++) {
+            const star = document.createElement('div');
+            star.style.position = 'absolute';
+            star.style.width = '1px';
+            star.style.height = '1px';
+            star.style.background = 'white';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.opacity = Math.random();
+            starContainer.appendChild(star);
         }
     </script>
 </body>
